@@ -28,7 +28,7 @@ module.exports = function(options) {
             // prepend with site relative/absolute path
             if (matches) {
               _.map(matches, function (match) {
-                newPath = newPath.substring(0, newPath.lastIndexOf('/'));
+                newPath = newPath.substring(newPath.indexOf(match), newPath.lastIndexOf('/'));
                 newUrl = newUrl.substring(match.length);
               });
             }
