@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var rework = require('rework');
 var reworkUrl = require('rework-plugin-url');
 var through = require('through2');
@@ -7,14 +8,33 @@ module.exports = function(options) {
   var replace = options.replace;
   var prependRelative = options.prependRelative;
   var append = options.append;
+  var prependImgDir = options.prependImgDir;
 
-  function prependUrls(css, path) {
+  function prependUrls(css, path, filename) {
     return rework(css)
       .use(reworkUrl(function(url) {
         if (url.indexOf('data:') === 0) {
           return url;
         } else {
-          var newUrl = path + '/' + url;
+          var newUrl = url;
+
+          if (prependImgDir) {
+            var newPath = path,
+                matches = newUrl.match(/\.\.\//g);
+
+            newPath = newPath.substring(newPath.indexOf('node_modules'), newPath.indexOf(filename) - 1);
+            newPath = newPath.replace('node_modules/', '');
+
+            // prepend with site relative/absolute path
+            if (matches) {
+              _.map(matches, function (match) {
+                newPath = newPath.substring(0, newPath.lastIndexOf('/'));
+                newUrl = newUrl.substring(match.length);
+              });
+            }
+
+            newUrl = newPath + '/' + newUrl;
+          }
 
           if (prepend) {
             newUrl = prepend + newUrl;
@@ -45,7 +65,7 @@ module.exports = function(options) {
   };
 
   return through.obj(function(file, enc, cb) {
-    var css = prependUrls(file.contents.toString(), file.path);
+    var css = prependUrls(file.contents.toString(), file.path, file.relative);
     file.contents = new Buffer(css);
 
     this.push(file);

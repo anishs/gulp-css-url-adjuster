@@ -5,6 +5,7 @@
   "main": "index.js",
 
   "dependencies": {
+    "lodash": "2.4.1",
     "rework": "~1.0.1",
     "rework-plugin-url": "~1.0.1",
     "through2": "~1.0.0",
